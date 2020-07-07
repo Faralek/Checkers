@@ -30,7 +30,7 @@ public class Checkers extends Application {
     private final Image imageBack = new Image(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("chessboard.png")));
     private final Image imageLose = new Image(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("lose.png")));
     private final Image imageWin = new Image(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("win.png")));
-    //  private final Image imageMultiKill = new Image(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("multiKill.png")));
+    private final Image imageDoubleKill = new Image(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("doubleKill.png")));
 
     public static void main(String[] args) {
         launch(args);
@@ -127,9 +127,61 @@ public class Checkers extends Application {
             board[(killingMoves.get(0).positionX + killingMoves.get(0).directionX) / 2][(killingMoves.get(0).positionY + killingMoves.get(0).directionY) / 2].setChecker(null);
             pieceGroup.getChildren().remove(otherChecker);
 
-            return;
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
 
-        }
+            }
+
+            int i = killingMoves.get(0).directionX;
+            int j = killingMoves.get(0).directionY;
+
+            for (int x = -2; x < 3; x++) {
+                for (int y = -2; y < 3; y++) {
+
+                    int maxValue = 7;
+                    int minValue = 0;
+
+                    int a = i + x;
+                    int b = j + y;
+
+                    a = Math.min(a, maxValue);
+                    a = Math.max(a, minValue);
+                    b = Math.min(b, maxValue);
+                    b = Math.max(b, minValue);
+
+                    moveResult = tryMove(board[i][j].getChecker(), a, b);
+
+                    if (moveResult.getType() == MoveType.KILL) {
+                        killingMoves.clear();
+                        Move move = new Move(i, j, a, b);
+                        killingMoves.add(move);
+
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+
+                        }
+
+                        System.out.println("kill " + killingMoves.size());
+
+                        OneChecker checker2 = board[killingMoves.get(0).positionX][killingMoves.get(0).positionY].getChecker();
+
+                        board[killingMoves.get(0).positionX][killingMoves.get(0).positionY].getChecker().move(killingMoves.get(0).directionX, killingMoves.get(0).directionY);
+
+                        board[killingMoves.get(0).positionX][killingMoves.get(0).positionY].setChecker(null);
+                        board[killingMoves.get(0).directionX][killingMoves.get(0).directionY].setChecker(checker2);
+
+                        OneChecker otherChecker2 = board[(killingMoves.get(0).positionX + killingMoves.get(0).directionX) / 2][(killingMoves.get(0).positionY + killingMoves.get(0).directionY) / 2].getChecker();
+                        board[(killingMoves.get(0).positionX + killingMoves.get(0).directionX) / 2][(killingMoves.get(0).positionY + killingMoves.get(0).directionY) / 2].setChecker(null);
+                        pieceGroup.getChildren().remove(otherChecker2);
+
+
+                    }
+
+                    return;
+
+                }}}
         if (normalMoves.size() > 0) {
             Collections.shuffle(normalMoves);
             System.out.println("normal " + normalMoves.size());
@@ -368,9 +420,9 @@ public class Checkers extends Application {
         endGameButton.setOnAction(r -> System.exit(0));
 
         endGameButton.setAlignment(Pos.CENTER);
-        endGameButton.setPrefSize(100, 50);
+        endGameButton.setPrefSize(100, 40);
 
-        resetButton.setPrefSize(100, 50);
+        resetButton.setPrefSize(100, 40);
         resetButton.setAlignment(Pos.CENTER);
 
         buttons.getChildren().add(resetButton);
@@ -387,8 +439,8 @@ public class Checkers extends Application {
         root.setBackground(background);
         root.setAlignment(Pos.CENTER);
 
-        Scene scene = new Scene(root, 930, 930, Color.WHITE);
-
+        Scene scene = new Scene(root, 920, 920, Color.WHITE);
+        primaryStage.setResizable(false);
         primaryStage.setTitle("Checkers");
         primaryStage.setScene(scene);
         primaryStage.show();
