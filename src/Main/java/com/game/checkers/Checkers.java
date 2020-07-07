@@ -45,8 +45,8 @@ public class Checkers extends Application {
             return new MoveResult(MoveType.NONE);
         }
 
-        int x0 = toBoard(checker.getOldX());
-        int y0 = toBoard(checker.getOldY());
+        int x0 = toBoard(checker.getOldX()-20);
+        int y0 = toBoard(checker.getOldY()-20);
 
         if (Math.abs(newX - x0) == 1 && newY - y0 == checker.getType().moveDir) {
             return new MoveResult(MoveType.NORMAL);
@@ -181,7 +181,9 @@ public class Checkers extends Application {
 
                     return;
 
-                }}}
+                }
+            }
+        }
         if (normalMoves.size() > 0) {
             Collections.shuffle(normalMoves);
             System.out.println("normal " + normalMoves.size());
@@ -223,6 +225,41 @@ public class Checkers extends Application {
         resetButton2.relocate(200, 400);
         buttons.getChildren().add(endGameButton2);
         endGameButton2.relocate(400, 400);
+    }
+
+    private boolean doubleKillPlayer(int i, int j) {
+
+        MoveResult moveResult = new MoveResult(MoveType.NONE);
+        ArrayList<Move> killingMoves = new ArrayList<>();
+
+        for (int x = -2; x < 3; x++) {
+            for (int y = -2; y < 3; y++) {
+
+                int maxValue = 7;
+                int minValue = 0;
+
+                int a = i + x;
+                int b = j + y;
+
+                a = Math.min(a, maxValue);
+                a = Math.max(a, minValue);
+                b = Math.min(b, maxValue);
+                b = Math.max(b, minValue);
+
+                moveResult = tryMove(board[i][j].getChecker(), a, b);
+
+                if (moveResult.getType() == MoveType.KILL) {
+                    killingMoves.clear();
+                    Move move = new Move(i, j, a, b);
+                    killingMoves.add(move);
+
+                    if (killingMoves.contains(move)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private void didComputerWin() {
@@ -324,6 +361,7 @@ public class Checkers extends Application {
     }
 
     private OneChecker makeChecker(CheckerType type, int x, int y) {
+
         OneChecker checker = new OneChecker(type, x, y);
 
         checker.setOnMouseReleased(e -> {
@@ -360,9 +398,12 @@ public class Checkers extends Application {
                     OneChecker otherChecker = result.getChecker();
                     board[toBoard(otherChecker.getOldX())][toBoard(otherChecker.getOldY())].setChecker(null);
                     pieceGroup.getChildren().remove(otherChecker);
+                    if (doubleKillPlayer(newX, newY)) {
+                        didComputerWin();
+                        break;
+                    }
                     moveComputer();
                     didComputerWin();
-
                     break;
             }
         });

@@ -40,6 +40,7 @@ public class OneChecker extends StackPane {
 
         FlowPane checker = new FlowPane();
 
+        checker.setMaxSize(100,100);
         if (type == CheckerType.RED) {
             img.setFitWidth(100);
             img.setFitHeight(100);
@@ -53,12 +54,13 @@ public class OneChecker extends StackPane {
 
         getChildren().addAll(checker);
 
-        setOnMousePressed(e -> {
+        checker.setOnMousePressed(e -> {
             mouseX = e.getSceneX();
             mouseY = e.getSceneY();
+
         });
 
-        setOnMouseDragged(e -> {
+        checker.setOnMouseDragged(e -> {
             relocate(e.getSceneX() - mouseX + oldX, e.getSceneY() - mouseY + oldY);
         });
     }
